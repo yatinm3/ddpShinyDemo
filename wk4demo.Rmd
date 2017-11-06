@@ -1,0 +1,44 @@
+---
+title: "Shiny demo: On-demand equity trading price chart"
+author: "yatinm3, 11/3/2017"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This Shiny application displays historical stock performance for any date range in the past 10 years.
+### User Instructions
+
+1. Enter a valid US stock symbol in the box below (for example: INTC, GOOG, MSFT, AAPL, MRK, GE, ...)
+2. Select the desired date range using the slider input
+```{r stockplot, echo=FALSE, warning=FALSE, message=FALSE}
+library(quantmod)
+#library(TTR)
+# Removed symbol checking
+#tickList <- stockSymbols()
+#checkSymbols <- function(tick) {return(length(which(tickList$Symbol == tick)))}
+stock.env <- new.env()
+
+inputPanel(
+     
+  textInput("symbol", label = "Enter Valid Stock Symbol: ", value="INTC", placeholder = "Ex: MSFT or GOOG or AMZN"),
+
+  sliderInput("date_range", "Choose Date Range:", min = as.Date("2007-01-03"), max = Sys.Date(), 
+               step = 1, value = c(as.Date("2007-01-03"), Sys.Date()))
+)
+renderPlot({
+  
+  getSymbols(input$symbol, src="yahoo", env = stock.env, from = as.Date(input$date_range[1]), to = as.Date(input$date_range[2]) )
+  symbol.data <- get(input$symbol, envir = stock.env)
+  chartSeries(symbol.data)
+})
+```
+
+Using R, Shiny, Markdown and Knitr it is super simple to embed interactive graphics on a publicly hosted html page.
+
+The entire code is less than 15 lines and available [here](http://rpubs.com/yama3/stockplotcode).
+
+The github repository for all the associated material is available [here](https://github.com/yatinm3/ddpShinyDemo).
